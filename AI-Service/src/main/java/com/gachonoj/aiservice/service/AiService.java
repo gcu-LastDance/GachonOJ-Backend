@@ -40,7 +40,11 @@ public class AiService {
         String code = feedbackRequestDto.getCode();
         String prompt = feedbackRequestDto.getPrompt();
         prompt = code + "\n" + prompt;
-        ChatGPTRequest request = new ChatGPTRequest(model, prompt);
+//        ChatGPTRequest request = new ChatGPTRequest(model, prompt);
+        ChatGPTRequest request = ChatGPTRequest.builder()
+            .model(model)
+            .prompt(prompt)
+            .build();
         ChatGPTResponse response = restTemplate.postForObject(url, request, ChatGPTResponse.class);
         return response.getChoices().get(0).getMessage().getContent();
     }
@@ -64,13 +68,24 @@ public class AiService {
         log.info("problemId : {}", problemId);
         String prompt = problemServiceFeignClient.getProblemPromptByProblemId(problemId);
         String aiPrompt = code + "\n" + prompt;
-        ChatGPTRequest request = new ChatGPTRequest(model, aiPrompt);
+//        ChatGPTRequest request = new ChatGPTRequest(model, aiPrompt);
+        ChatGPTRequest request = ChatGPTRequest.builder()
+            .model(model)
+            .prompt(aiPrompt)
+            .build();
         ChatGPTResponse response = restTemplate.postForObject(url, request, ChatGPTResponse.class);
         String aiContents = response.getChoices().get(0).getMessage().getContent();
         Integer totalTokens = response.getUsage().getTotal_tokens();
         Feedback feedback = new Feedback(submissionId, memberId, problemId, aiContents,totalTokens);
         feedbackRepository.save(feedback);
-        return new AiFeedbackResponseDto(problemId,problemTitle,memberNickname,code,aiContents);
+
+        return AiFeedbackResponseDto.builder()
+            .problemId(problemId)
+            .problemTitle(problemTitle)
+            .memberNickname(memberNickname)
+            .code(code)
+            .aiContents(aiContents)
+            .build();
     }
     // 토큰 사용량 조회
     @Transactional(readOnly = true)
@@ -78,7 +93,10 @@ public class AiService {
         List<Feedback> feedbacks= feedbackRepository.findByFeedbackCreatedDateBetween(LocalDate.now().atStartOfDay(), LocalDate.now().atTime(23,59,59));
         Long todayTokenUsage = feedbacks.stream().mapToLong(Feedback::getTotalTokens).sum();
         Long totalTokenUsage = feedbackRepository.findAll().stream().mapToLong(Feedback::getTotalTokens).sum();
-        return new TokenUsageResponseDto(todayTokenUsage, totalTokenUsage);
+        return TokenUsageResponseDto.builder()
+            .todayTokenUsage(todayTokenUsage)
+            .totalTokenUsage(totalTokenUsage)
+            .build();
     }
 
 }

@@ -1,13 +1,9 @@
 package com.gachonoj.problemservice.domain.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TestOverviewResponseDto {
     private Long testId;
@@ -16,4 +12,14 @@ public class TestOverviewResponseDto {
     private String examStartDate;
     private String examEndDate;
     private boolean completed;
+
+    @Builder
+    private TestOverviewResponseDto(Long testId, Long examId, String examTitle, String examStartDate, String examEndDate, boolean completed) {
+        this.testId = testId;
+        this.examId = examId;
+        this.examTitle = examTitle;
+        this.examStartDate = examStartDate;
+        this.examEndDate = examEndDate;
+        this.completed = completed;
+    }
 }

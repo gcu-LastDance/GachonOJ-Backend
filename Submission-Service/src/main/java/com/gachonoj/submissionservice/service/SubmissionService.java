@@ -55,41 +55,45 @@ public class SubmissionService {
     public List<ExecuteResultResponseDto> executeCodeByProblemId(ExecuteRequestDto executeRequestDto, Long problemId) {
         List<String> input = new ArrayList<>();
         input = problemServiceFeignClient.getVisibleTestCases(problemId).stream()
-                .map(SubmissionProblemTestCaseResponseDto::getInput)
-                .collect(Collectors.toList());
+            .map(SubmissionProblemTestCaseResponseDto::getInput)
+            .collect(Collectors.toList());
         List<String> output = new ArrayList<>();
         output = problemServiceFeignClient.getVisibleTestCases(problemId).stream()
-                .map(SubmissionProblemTestCaseResponseDto::getOutput)
-                .collect(Collectors.toList());
+            .map(SubmissionProblemTestCaseResponseDto::getOutput)
+            .collect(Collectors.toList());
         // executeRequestDto에서 주는 testcase 추가하기
-        if(executeRequestDto.getTestcase()!=null){
+        if (executeRequestDto.getTestcase() != null) {
             for (Map.Entry<String, String> entry : executeRequestDto.getTestcase().entrySet()) {
                 input.add(entry.getKey());
                 output.add(entry.getValue());
             }
         }
-        Map<String,String> result = executeService.executeCode(executeRequestDto, input,output,10);
+        Map<String, String> result = executeService.executeCode(executeRequestDto, input, output, 10);
         List<ExecuteResultResponseDto> response = new ArrayList<>();
         for (Map.Entry<String, String> entry : result.entrySet()) {
-            response.add(new ExecuteResultResponseDto(entry.getKey(),entry.getValue()));
+            response.add(ExecuteResultResponseDto.builder()
+                .output(entry.getKey())
+                .result(entry.getValue())
+                .build());
         }
         return response;
     }
+
     // 문제 채점 실행
     @Transactional
     public SubmissionResultResponseDto submissionByProblemId(ExecuteRequestDto executeRequestDto, Long problemId, Long memberId) {
         List<String> input = problemServiceFeignClient.getTestCases(problemId).stream()
-                .map(SubmissionProblemTestCaseResponseDto::getInput)
-                .collect(Collectors.toList());
+            .map(SubmissionProblemTestCaseResponseDto::getInput)
+            .collect(Collectors.toList());
         List<String> output = problemServiceFeignClient.getTestCases(problemId).stream()
-                .map(SubmissionProblemTestCaseResponseDto::getOutput)
-                .collect(Collectors.toList());
+            .map(SubmissionProblemTestCaseResponseDto::getOutput)
+            .collect(Collectors.toList());
         // memberId 로 submission 엔티티 조회
         List<Submission> submissions = submissionRepository.findByMemberIdAndProblemId(memberId, problemId);
         Boolean isExist = false;
         // 제출이력 중 정답이 있는지 확인
         for (Submission submission : submissions) {
-            if(submission.getSubmissionStatus() == Status.CORRECT) {
+            if (submission.getSubmissionStatus() == Status.CORRECT) {
                 isExist = true;
                 break;
             }
@@ -103,17 +107,17 @@ public class SubmissionService {
 
 
         // 코드 실행 결과
-        Map<String,String> result = executeService.executeCode(executeRequestDto, input,output,problemTimeLimit);
+        Map<String, String> result = executeService.executeCode(executeRequestDto, input, output, problemTimeLimit);
         int correctCount = 0;
         // 정답 개수 세기
         for (Map.Entry<String, String> entry : result.entrySet()) {
-            if(entry.getValue().equals("정답")){
+            if (entry.getValue().equals("정답")) {
                 correctCount++;
             }
         }
         // 반환하기 위한 변수들
         // isCorrect: 모든 테스트 케이스를 통과했는지 여부
-        boolean isCorrect = correctCount==result.size();
+        boolean isCorrect = correctCount == result.size();
         // memberRank: 현재 rank 점수
         Integer memberRank = submissionMemberRankInfoResponseDto.getMemberRank();
         // rating : 현재 rating
@@ -123,35 +127,44 @@ public class SubmissionService {
         Integer afterRating = rating;
         boolean ratingChanged = false;
         // problemScore 가 needRating보다 크면 rating을 +1 해서 afterRating에 저장하고 ratingChanged를 true로 설정
-        if(problemScore>=needRating){
+        if (problemScore >= needRating) {
             afterRating++;
             ratingChanged = true;
         }
         // submission 엔티티 생성
         Submission submission = Submission.builder()
-                .memberId(memberId)
-                .problemId(problemId)
-                .submissionCode(executeRequestDto.getCode())
-                .submissionStatus(isCorrect ? Status.CORRECT : Status.INCORRECT)
-                .submissionLang(Language.fromLabel(executeRequestDto.getLanguage()))
-                .build();
+            .memberId(memberId)
+            .problemId(problemId)
+            .submissionCode(executeRequestDto.getCode())
+            .submissionStatus(isCorrect ? Status.CORRECT : Status.INCORRECT)
+            .submissionLang(Language.fromLabel(executeRequestDto.getLanguage()))
+            .build();
         // Member 엔티티에 memberRank 반영
-        if(isCorrect && !isExist){
-            memberServiceFeignClient.updateMemberRank(memberId,memberRank+problemScore);
+        if (isCorrect && !isExist) {
+            memberServiceFeignClient.updateMemberRank(memberId, memberRank + problemScore);
         }
         // Submission 엔티티 저장
         submissionRepository.save(submission);
         // 저장된 submission 엔티티의 id를 반환하기 위해 저장
         Long submissionId = submission.getSubmissionId();
         // 반환
-        return new SubmissionResultResponseDto(isCorrect,memberRank,problemScore,memberRank+problemScore,ratingChanged,rating,afterRating,submissionId);
+        return SubmissionResultResponseDto.builder()
+            .isCorrect(isCorrect)
+            .memberRank(memberRank)
+            .problemRank(problemScore)
+            .afterMemberRank(memberRank + problemScore)
+            .ratingChanged(ratingChanged)
+            .memberRating(rating)
+            .afterMemberRating(afterRating)
+            .submissionId(submissionId)
+            .build();
     }
 
     // 금일 채점 결과 현황 조회
     @Transactional(readOnly = true)
     public TodaySubmissionCountResponseDto getTodaySubmissionCount() {
         log.info("변환된 시간 확인하기" + LocalDate.now().atStartOfDay());
-        List<Submission> submissions = submissionRepository.findBySubmissionDateBetween(LocalDate.now().atStartOfDay(), LocalDate.now().atTime(23,59,59));
+        List<Submission> submissions = submissionRepository.findBySubmissionDateBetween(LocalDate.now().atStartOfDay(), LocalDate.now().atTime(23, 59, 59));
         int total = submissions.size();
         int correct = 0;
         int incorrect = 0;
@@ -162,7 +175,11 @@ public class SubmissionService {
                 incorrect++;
             }
         }
-        return new TodaySubmissionCountResponseDto(total, correct, incorrect);
+        return TodaySubmissionCountResponseDto.builder()
+            .incorrectSubmissionCount(incorrect)
+            .correctSubmissionCount(correct)
+            .totalSubmissionCount(total)
+            .build();
     }
 
     // 시험 제출 정보 조회
@@ -170,13 +187,16 @@ public class SubmissionService {
     public List<SubmissionDetailDto> getSubmissionsDetails(Long memberId, List<Long> problemIds) {
         List<Submission> submissions = submissionRepository.findByMemberIdAndProblemIdIn(memberId, problemIds);
         return submissions.stream()
-                .map(submission -> new SubmissionDetailDto(
-                        submission.getProblemId(),
-                        submission.getSubmissionStatus() == Status.CORRECT,
-                        submission.getSubmissionCode()
-                ))
-                .collect(Collectors.toList());
+            .map(submission ->
+                SubmissionDetailDto.builder()
+                    .problemId(submission.getProblemId())
+                    .isCorrect(submission.getSubmissionStatus() == Status.CORRECT)
+                    .submissionCode(submission.getSubmissionCode())
+                    .build()
+            )
+            .collect(Collectors.toList());
     }
+
     // 제출한 코드 확인하기
     @Transactional(readOnly = true)
     public MySubmissionResultResponseDto getSubmissionCodeBySubmissionId(Long submissionId) {
@@ -185,7 +205,11 @@ public class SubmissionService {
         String problemTitle = problemServiceFeignClient.getProblemTitle(submission.getProblemId());
         // 닉네임 가져오기
         String nickname = memberServiceFeignClient.getMemberNickname(submission.getMemberId());
-        return new MySubmissionResultResponseDto(nickname,problemTitle,submission.getSubmissionCode());
+        return MySubmissionResultResponseDto.builder()
+            .memberNickname(nickname)
+            .problemTitle(problemTitle)
+            .submissionCode(submission.getSubmissionCode())
+            .build();
     }
 
     // 제출 이력 조회
@@ -193,14 +217,16 @@ public class SubmissionService {
     public List<SubmissionRecordResponseDto> getSubmissionRecordsByMemberAndProblemId(Long memberId, Long problemId) {
         List<Submission> submissions = submissionRepository.findByMemberIdAndProblemId(memberId, problemId);
         return submissions.stream()
-                .map(submission -> new SubmissionRecordResponseDto(
-                        submission.getSubmissionId(),
-                        submission.getSubmissionStatus().getLabel(),
-                        submission.getSubmissionLang(),
-                        changeTimeFormat(submission.getSubmissionDate())
-                ))
-                .toList();
+            .map(submission ->
+                SubmissionRecordResponseDto.builder()
+                    .submissionId(submission.getSubmissionId())
+                    .submissionDate(changeTimeFormat(submission.getSubmissionDate()))
+                    .submissionStatus(submission.getSubmissionStatus().getLabel())
+                    .build()
+            )
+            .toList();
     }
+
     // 시험 문제 답안 제출
     @Transactional
     public void submitExam(List<ExamSubmitRequestDto> examSubmitRequestDtos, Long memberId, Long examId) {
@@ -209,59 +235,65 @@ public class SubmissionService {
         // 각 문제 채점
         for (ExamSubmitRequestDto examSubmitRequestDto : examSubmitRequestDtos) {
             List<String> input = problemServiceFeignClient.getTestCases(examSubmitRequestDto.getProblemId()).stream()
-                    .map(SubmissionProblemTestCaseResponseDto::getInput)
-                    .collect(Collectors.toList());
+                .map(SubmissionProblemTestCaseResponseDto::getInput)
+                .collect(Collectors.toList());
             List<String> output = problemServiceFeignClient.getTestCases(examSubmitRequestDto.getProblemId()).stream()
-                    .map(SubmissionProblemTestCaseResponseDto::getOutput)
-                    .collect(Collectors.toList());
+                .map(SubmissionProblemTestCaseResponseDto::getOutput)
+                .collect(Collectors.toList());
             // question의 점수 가져오기
             Integer problemScore = problemServiceFeignClient.getQuestionScore(examSubmitRequestDto.getProblemId());
             // 문제의 timelimit 가져오기
             Integer problemTimeLimit = problemServiceFeignClient.getProblemTimeLimit(examSubmitRequestDto.getProblemId());
             // 코드 실행 결과
-            Map<String,String> result = executeService.executeCode(new ExecuteRequestDto(examSubmitRequestDto.getCode(),examSubmitRequestDto.getLanguage(),null), input,output,problemTimeLimit);
+            ExecuteRequestDto executeRequestDto = ExecuteRequestDto.builder()
+                .code(examSubmitRequestDto.getCode())
+                .language(examSubmitRequestDto.getLanguage())
+                .testcase(null)
+                .build();
+            Map<String, String> result = executeService.executeCode(executeRequestDto, input, output, problemTimeLimit);
             int correctCount = 0;
             // 정답 개수 세기
             for (Map.Entry<String, String> entry : result.entrySet()) {
-                if(entry.getValue().equals("정답")){
+                if (entry.getValue().equals("정답")) {
                     correctCount++;
                 }
             }
             // 반환하기 위한 변수들
             // isCorrect: 모든 테스트 케이스를 통과했는지 여부
-            boolean isCorrect = correctCount==result.size();
-            if(isCorrect){
+            boolean isCorrect = correctCount == result.size();
+            if (isCorrect) {
                 totalScore += problemScore;
             }
             // submission 엔티티 생성
             Submission submission = Submission.builder()
-                    .memberId(memberId)
-                    .problemId(examSubmitRequestDto.getProblemId())
-                    .submissionCode(examSubmitRequestDto.getCode())
-                    .submissionStatus(isCorrect ? Status.CORRECT : Status.INCORRECT)
-                    .submissionLang(Language.fromLabel(examSubmitRequestDto.getLanguage()))
-                    .build();
+                .memberId(memberId)
+                .problemId(examSubmitRequestDto.getProblemId())
+                .submissionCode(examSubmitRequestDto.getCode())
+                .submissionStatus(isCorrect ? Status.CORRECT : Status.INCORRECT)
+                .submissionLang(Language.fromLabel(examSubmitRequestDto.getLanguage()))
+                .build();
             // Submission 엔티티 저장
             submissionRepository.save(submission);
         }
         // Test 엔티티에 점수 반영 및 종료시간 반영
         problemServiceFeignClient.saveTestScore(examId, memberId, totalScore);
     }
+
     // 코드 저장
     @Transactional
     public void saveCodeByProblemId(ExecuteRequestDto executeRequestDto, Long problemId, Long memberId) {
         Submission submission = Submission.builder()
-                .memberId(memberId)
-                .problemId(problemId)
-                .submissionCode(executeRequestDto.getCode())
-                .submissionStatus(Status.INCORRECT)
-                .submissionLang(Language.fromLabel(executeRequestDto.getLanguage()))
-                .build();
+            .memberId(memberId)
+            .problemId(problemId)
+            .submissionCode(executeRequestDto.getCode())
+            .submissionStatus(Status.INCORRECT)
+            .submissionLang(Language.fromLabel(executeRequestDto.getLanguage()))
+            .build();
         submissionRepository.save(submission);
     }
 
     // 시간 포맷 변경 함수(YYYY-MM-MM HH:MM:SS)
-    public String changeTimeFormat(LocalDateTime localDateTime){
+    public String changeTimeFormat(LocalDateTime localDateTime) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return localDateTime.format(formatter);
     }

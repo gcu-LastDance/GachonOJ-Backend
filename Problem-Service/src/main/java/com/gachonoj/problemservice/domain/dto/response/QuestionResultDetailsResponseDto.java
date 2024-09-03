@@ -1,12 +1,8 @@
 package com.gachonoj.problemservice.domain.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
 public class QuestionResultDetailsResponseDto {
     private int questionSequence;
     private int questionScore;
@@ -15,4 +11,15 @@ public class QuestionResultDetailsResponseDto {
     private String problemContents;
     private boolean submissionStatus;
     private String submissionCode;
+
+    @Builder
+    private QuestionResultDetailsResponseDto(int questionSequence, int questionScore, Long problemId, String problemTitle, String problemContents, boolean submissionStatus, String submissionCode) {
+        this.questionSequence = questionSequence;
+        this.questionScore = questionScore;
+        this.problemId = problemId;
+        this.problemTitle = problemTitle;
+        this.problemContents = problemContents;
+        this.submissionStatus = submissionStatus;
+        this.submissionCode = submissionCode;
+    }
 }

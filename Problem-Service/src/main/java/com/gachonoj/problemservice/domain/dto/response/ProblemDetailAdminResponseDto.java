@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
-@Setter
 @NoArgsConstructor
 public class ProblemDetailAdminResponseDto {
     private Long problemId;
@@ -38,10 +37,12 @@ public class ProblemDetailAdminResponseDto {
         this.problemStatus = problem.getProblemStatus().name();
         this.problemPrompt = problem.getProblemPrompt();
         this.testcases = problem.getTestcases().stream()
-                .map(tc -> new TestcaseResponseDto(
-                        tc.getTestcaseInput(),
-                        tc.getTestcaseOutput(),
-                        tc.getTestcaseStatus().name()))
-                .collect(Collectors.toList());
+            .map(tc ->
+                TestcaseResponseDto.builder()
+                    .testcaseInput(tc.getTestcaseInput())
+                    .testcaseOutput(tc.getTestcaseOutput())
+                    .testcaseStatus(tc.getTestcaseStatus().name())
+                    .build())
+            .collect(Collectors.toList());
     }
 }

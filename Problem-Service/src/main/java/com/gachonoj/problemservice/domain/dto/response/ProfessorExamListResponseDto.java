@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
 public class ProfessorExamListResponseDto {
     private Long examId;
     private String examTitle;

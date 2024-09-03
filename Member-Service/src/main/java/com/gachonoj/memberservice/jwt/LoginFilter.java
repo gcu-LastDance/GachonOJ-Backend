@@ -67,7 +67,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         redisService.setDataExpire(Long.toString(memberId),refreshToken,jwtUtil.getRefreshTokenExpireTime());
 
-        LoginResponseDto loginResponseDto = new LoginResponseDto(memberImg,memberRole); // 여기에 필요한 데이터를 설정하세요.
+        LoginResponseDto loginResponseDto = LoginResponseDto.builder()
+            .memberImg(memberImg)
+            .memberRole(memberRole)
+            .build();
         CommonResponseDto<LoginResponseDto> commonResponseDto = CommonResponseDto.success(loginResponseDto);
 
         ObjectMapper mapper = new ObjectMapper();

@@ -56,7 +56,7 @@ public class ExamService {
         // WRITING 상태를 제외하고 exam 가져오기
         List<Exam> exams = examRepository.findByExamStatusNot(ExamStatus.WRITING);
         LocalDateTime now = LocalDateTime.now();
-        for(Exam exam : exams) {
+        for (Exam exam : exams) {
             if (exam.getExamStartDate().isBefore(now) && exam.getExamEndDate().isAfter(now)) {
                 exam.setExamStatus(ExamStatus.ONGOING);
             } else if (exam.getExamEndDate().isBefore(now)) {
@@ -144,7 +144,7 @@ public class ExamService {
         }
 
         Exam existingExam = examRepository.findById(examId)
-                .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
+            .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd.HH.mm.ss");
         LocalDateTime startDate = LocalDateTime.parse(request.getExamStartDate(), formatter);
         LocalDateTime endDate = LocalDateTime.parse(request.getExamEndDate(), formatter);
@@ -175,7 +175,7 @@ public class ExamService {
             } else {
                 // 기존 문제 업데이트
                 problem = problemRepository.findByProblemId(problemRequestDto.getProblemId())
-                        .orElseThrow(() -> new IllegalArgumentException("Problem not found with id: " + problemRequestDto.getProblemId()));
+                    .orElseThrow(() -> new IllegalArgumentException("Problem not found with id: " + problemRequestDto.getProblemId()));
             }
 
             problem.setProblemTitle(problemRequestDto.getProblemTitle());
@@ -214,21 +214,21 @@ public class ExamService {
     public void updateQuestions(Exam exam, List<ProblemRequestDto> problemRequestDtos) {
         List<Question> existingQuestions = questionRepository.findByExamExamId(exam.getExamId());
         Map<Long, Question> existingQuestionsMap = existingQuestions.stream()
-                .collect(Collectors.toMap(q -> q.getProblem().getProblemId(), Function.identity()));
+            .collect(Collectors.toMap(q -> q.getProblem().getProblemId(), Function.identity()));
 
         Set<Long> updatedProblemIds = problemRequestDtos.stream()
-                .map(ProblemRequestDto::getProblemId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+            .map(ProblemRequestDto::getProblemId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
 
         // 기존 질문을 업데이트하거나 삭제
         for (Question existingQuestion : existingQuestions) {
             Long problemId = existingQuestion.getProblem().getProblemId();
             if (updatedProblemIds.contains(problemId)) {
                 ProblemRequestDto dto = problemRequestDtos.stream()
-                        .filter(p -> p.getProblemId().equals(problemId))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("Problem not found in request DTOs"));
+                    .filter(p -> p.getProblemId().equals(problemId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Problem not found in request DTOs"));
                 existingQuestion.setQuestionScore(dto.getQuestionScore() != null ? dto.getQuestionScore() : 10);
                 existingQuestion.setQuestionSequence(dto.getQuestionSequence());
                 questionRepository.save(existingQuestion);
@@ -243,7 +243,7 @@ public class ExamService {
                 Problem problem;
                 if (dto.getProblemId() != null) {
                     problem = problemRepository.findById(dto.getProblemId())
-                            .orElseThrow(() -> new IllegalArgumentException("Problem not found with id: " + dto.getProblemId()));
+                        .orElseThrow(() -> new IllegalArgumentException("Problem not found with id: " + dto.getProblemId()));
                 } else {
                     problem = new Problem();
                 }
@@ -284,12 +284,12 @@ public class ExamService {
 
         // 문제 삭제
         List<Long> currentProblemIds = problemRequestDtos.stream()
-                .map(ProblemRequestDto::getProblemId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+            .map(ProblemRequestDto::getProblemId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
         List<Problem> existingProblems = existingQuestions.stream()
-                .map(Question::getProblem)
-                .collect(Collectors.toList());
+            .map(Question::getProblem)
+            .collect(Collectors.toList());
 
         for (Problem existingProblem : existingProblems) {
             if (!currentProblemIds.contains(existingProblem.getProblemId())) {
@@ -298,14 +298,15 @@ public class ExamService {
             }
         }
     }
+
     private void updateCandidateTests(Exam exam, List<Long> candidateIds) {
         // Exam 엔티티를 관리 상태로 가져옵니다.
         Exam managedExam = examRepository.findById(exam.getExamId())
-                .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + exam.getExamId()));
+            .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + exam.getExamId()));
 
         List<Test> existingTests = testRepository.findByExamExamId(managedExam.getExamId());
         Map<Long, Test> existingTestsMap = existingTests.stream()
-                .collect(Collectors.toMap(Test::getMemberId, test -> test));
+            .collect(Collectors.toMap(Test::getMemberId, test -> test));
 
         // 중복된 candidateId 제거
         Set<Long> uniqueCandidateIds = new HashSet<>(candidateIds);
@@ -330,13 +331,14 @@ public class ExamService {
             }
         });
     }
+
     private static final Logger logger = LoggerFactory.getLogger(ExamService.class);
 
     // 시험 문제 조회
     @Transactional(readOnly = true)
     public ExamDetailResponseDto getExamDetail(Long examId) {
         Exam exam = examRepository.findById(examId)
-                .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
+            .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd.HH.mm.ss");
 
@@ -345,42 +347,42 @@ public class ExamService {
 
         // ProblemDetailAdminResponseDto로 변환
         List<ProblemDetailAdminResponseDto> problemDetails = problems.stream()
-                .map(ProblemDetailAdminResponseDto::new)
-                .collect(Collectors.toList());
+            .map(ProblemDetailAdminResponseDto::new)
+            .collect(Collectors.toList());
 
         // 후보자 목록 가져오기
         List<Long> candidateList = exam.getTests().stream()
-                .map(Test::getMemberId)
-                .collect(Collectors.toList());
+            .map(Test::getMemberId)
+            .collect(Collectors.toList());
 
         logger.info("Candidate List: " + candidateList);
 
 
         // ExamDetailResponseDto 생성 및 반환
-        return new ExamDetailResponseDto(
-                exam.getExamId(),
-                exam.getExamTitle(),
-                exam.getExamContents(),
-                formatter.format(exam.getExamStartDate()),
-                formatter.format(exam.getExamEndDate()),
-                exam.getExamStatus().name(),
-                exam.getExamType().name(),
-                exam.getExamMemo(),
-                exam.getExamNotice(),
-                exam.getExamDueTime(),
-                candidateList, // CandidateList 추가
-                problemDetails
-
-        );
+        return ExamDetailResponseDto.builder()
+            .examId(exam.getExamId())
+            .examTitle(exam.getExamTitle())
+            .examContents(exam.getExamContents())
+            .examStartDate(exam.getExamStartDate().format(formatter))
+            .examEndDate(exam.getExamEndDate().format(formatter))
+            .examStatus(exam.getExamStatus().getLabel())
+            .examType(exam.getExamType().getLabel())
+            .examMemo(exam.getExamMemo())
+            .examNotice(exam.getExamNotice())
+            .examDueTime(exam.getExamDueTime())
+            .candidateList(candidateList)
+            .tests(problemDetails)
+            .build();
     }
+
     // 시험 삭제
     @Transactional
     public void deleteExam(Long examId, Long requestingMemberId) {
         // examId로 problemId 가져오기
         List<Question> questions = questionRepository.findProblemIdsByExamExamId(examId);
         List<Long> problemIds = questions.stream()
-                .map(q -> q.getProblem().getProblemId())
-                .toList();
+            .map(q -> q.getProblem().getProblemId())
+            .toList();
         // 시험 삭제 시 해당 시험에 대한 제출 삭제
         submissionServiceFeignClient.deleteSubmissionByProblemIds(problemIds);
         questionRepository.deleteByExamExamId(examId);
@@ -398,12 +400,13 @@ public class ExamService {
         // examId로 problemId 가져오기
         List<Question> questions = questionRepository.findProblemIdsByExamExamId(examId);
         List<Long> problemIds = questions.stream()
-                .map(q -> q.getProblem().getProblemId())
-                .toList();        // 시험 삭제 시 해당 시험에 대한 제출 삭제
+            .map(q -> q.getProblem().getProblemId())
+            .toList();        // 시험 삭제 시 해당 시험에 대한 제출 삭제
         submissionServiceFeignClient.deleteSubmissionByProblemIds(problemIds);
         questionRepository.deleteByExamExamId(examId);
         examRepository.deleteById(examId);
     }
+
     // 시험 목록 조회 & 대회 목록 조회
     @Transactional(readOnly = true)
     public List<ExamCardInfoResponseDto> getExamList(Long memberId, String type, String status) {
@@ -423,20 +426,22 @@ public class ExamService {
     private List<TestOverviewResponseDto> getMemberTests(Long memberId, ExamType examType, ExamStatus status) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH시");
         return testRepository.findByMemberId(memberId).stream()
-                .filter(test -> test.getExam().getExamStatus() == status && test.getExam().getExamType() == examType)
-                .map(test -> {
-                    boolean isCompleted = test.getTestEndDate() != null;
-                    String formattedStartDate = (test.getExam().getExamStartDate() != null) ? formatter.format(test.getExam().getExamStartDate()) : "";
-                    String formattedEndDate = (test.getExam().getExamEndDate() != null) ? formatter.format(test.getExam().getExamEndDate()) : "";
-                    return new TestOverviewResponseDto(
-                            test.getTestId(),
-                            test.getExam().getExamId(),
-                            test.getExam().getExamTitle(),
-                            formattedStartDate,
-                            formattedEndDate,
-                            isCompleted
-                    );
-                }).collect(Collectors.toList());
+            .filter(test -> test.getExam().getExamStatus() == status && test.getExam().getExamType() == examType)
+            .map(test -> {
+                boolean isCompleted = test.getTestEndDate() != null;
+                String formattedStartDate = (test.getExam().getExamStartDate() != null) ? formatter.format(test.getExam().getExamStartDate()) : "";
+                String formattedEndDate = (test.getExam().getExamEndDate() != null) ? formatter.format(test.getExam().getExamEndDate()) : "";
+
+                return TestOverviewResponseDto.builder()
+                    .testId(test.getTestId())
+                    .examId(test.getExam().getExamId())
+                    .examTitle(test.getExam().getExamTitle())
+                    .examStartDate(formattedStartDate)
+                    .examEndDate(formattedEndDate)
+                    .completed(isCompleted)
+                    .build();
+            })
+            .collect(Collectors.toList());
     }
 
 
@@ -450,21 +455,21 @@ public class ExamService {
             }
         }
         return examIds.stream()
-                .map(examId -> {
-                    Exam exam = examRepository.findById(examId)
-                            .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
-                    String memberNickname = memberServiceFeignClient.getNicknames(exam.getMemberId());
+            .map(examId -> {
+                Exam exam = examRepository.findById(examId)
+                    .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
+                String memberNickname = memberServiceFeignClient.getNicknames(exam.getMemberId());
 
-                    return new ExamCardInfoResponseDto(
-                            exam.getExamId(),
-                            exam.getExamTitle(),
-                            memberNickname,
-                            dateFormatter(exam.getExamStartDate()),
-                            dateFormatter(exam.getExamEndDate()),
-                            exam.getExamStatus().getLabel()
-                    );
-                })
-                .toList();
+                return ExamCardInfoResponseDto.builder()
+                    .examId(exam.getExamId())
+                    .examTitle(exam.getExamTitle())
+                    .memberNickname(memberNickname)
+                    .examStartDate(exam.getExamStartDate().format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss")))
+                    .examEndDate(exam.getExamEndDate().format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss")))
+                    .examStatus(exam.getExamStatus().getLabel())
+                    .build();
+            })
+            .toList();
     }
 
     // 교수님 시험 목록 조회
@@ -478,6 +483,7 @@ public class ExamService {
             return new ProfessorExamListResponseDto(exam, examUpdateDate, examCreatedDate, examStartDate);
         });
     }
+
     // 관리자 시험 또는 대회 목록 조회
     public Page<ExamOrContestListResponseDto> getExamOrContestList(int pageNo, String type) {
         Pageable pageable = PageRequest.of(pageNo - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "examId"));
@@ -488,7 +494,13 @@ public class ExamService {
             String memberNickname = memberServiceFeignClient.getNicknames(exam.getMemberId());
             String examUpdateDate = dateFormatter(exam.getExamUpdateDate());
             String examCreatedDate = dateFormatter(exam.getExamCreatedDate());
-            return new ExamOrContestListResponseDto(exam, examUpdateDate, examCreatedDate,memberNickname);
+
+            return ExamOrContestListResponseDto.builder()
+                .exam(exam)
+                .examUpdateDate(examUpdateDate)
+                .examCreatedDate(examCreatedDate)
+                .memberNickname(memberNickname)
+                .build();
         });
     }
 
@@ -501,7 +513,7 @@ public class ExamService {
         }
 
         Exam exam = examRepository.findById(examId)
-                .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
+            .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
 
 
         String memberNickname = memberServiceFeignClient.getNicknames(exam.getMemberId());
@@ -509,16 +521,16 @@ public class ExamService {
         String formattedStartDate = exam.getExamStartDate().format(dateTimeFormatter);
         String formattedEndDate = exam.getExamEndDate().format(dateTimeFormatter);
 
-        return new ExamOrContestInfoResponseDto(
-                exam.getExamId(),
-                exam.getExamTitle(),
-                memberNickname,
-                exam.getExamContents(),
-                formattedStartDate,
-                formattedEndDate,
-                examType.getLabel(),
-                exam.getExamNotice()
-        );
+        return ExamOrContestInfoResponseDto.builder()
+            .examId(exam.getExamId())
+            .examTitle(exam.getExamTitle())
+            .memberNickname(memberNickname)
+            .examContents(exam.getExamContents())
+            .examStartDate(formattedStartDate)
+            .examEndDate(formattedEndDate)
+            .examType(exam.getExamType().getLabel())
+            .examNotice(exam.getExamNotice())
+            .build();
     }
 
     // 시험 결과 목록 조회
@@ -526,25 +538,25 @@ public class ExamService {
     public ExamResultPageDto getExamResultList(Long examId, int pageNo) {
         Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "testEndDate"));
         Exam exam = examRepository.findById(examId)
-                .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
+            .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
 
         Page<Test> tests = testRepository.findByExamExamId(examId, pageable);
 
         // 응시 기록이 있는 사람들만 필터링
         List<Test> filteredTests = tests.stream()
-                .filter(test -> test.getTestEndDate() != null && test.getTestStartDate() != null)
-                .collect(Collectors.toList());
+            .filter(test -> test.getTestEndDate() != null && test.getTestStartDate() != null)
+            .collect(Collectors.toList());
 
         List<ExamResultListDto> resultList = filteredTests.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+            .map(this::convertToDto)
+            .collect(Collectors.toList());
 
-        return new ExamResultPageDto(
-                exam.getExamTitle(),
-                exam.getExamMemo(),
-                resultList.size(),
-                resultList // List로 변환하여 전달
-        );
+        return ExamResultPageDto.builder()
+            .examMemo(exam.getExamMemo())
+            .examTitle(exam.getExamTitle())
+            .submissionTotal(resultList.size())
+            .results(resultList)
+            .build();
     }
 
     // Test 엔티티를 ExamResultListDto로 변환
@@ -558,9 +570,9 @@ public class ExamService {
         if (test.getTestStartDate() != null && test.getTestEndDate() != null) {
             Duration duration = Duration.between(test.getTestStartDate(), test.getTestEndDate());
             testDueTime = String.format("%02d:%02d:%02d",
-                    duration.toHoursPart(),
-                    duration.toMinutesPart(),
-                    duration.toSecondsPart());
+                duration.toHoursPart(),
+                duration.toMinutesPart(),
+                duration.toSecondsPart());
             submissionDate = test.getTestEndDate().format(dateTimeFormatter);
         } else {
             // 날짜 정보가 없는 경우 기본 문자열 설정
@@ -570,30 +582,33 @@ public class ExamService {
 
         ProblemMemberInfoResponseDto memberInfo = memberServiceFeignClient.getMemberInfo(test.getMemberId());
 
-        return new ExamResultListDto(
-                test.getTestId(),
-                test.getMemberId(),
-                memberInfo.getMemberName(),
-                memberInfo.getMemberNumber(),
-                memberInfo.getMemberEmail(),
-                test.getTestScore(),
-                testDueTime,
-                submissionDate
-        );
+
+        return ExamResultListDto.builder()
+            .testId(test.getTestId())
+            .memberId(test.getMemberId())
+            .memberName(memberInfo.getMemberName())
+            .memberNumber(memberInfo.getMemberNumber())
+            .memberEmail(memberInfo.getMemberEmail())
+            .totalScore(test.getTestScore())
+            .examDueTime(testDueTime)
+            .submissionDate(submissionDate)
+            .build();
+
     }
+
     // 시험 결과 상세 조회
     @Transactional(readOnly = true)
     public ExamResultDetailsResponseDto getExamResults(Long testId) {
         Test test = testRepository.findById(testId)
-                .orElseThrow(() -> new IllegalArgumentException("Test not found with id: " + testId));
+            .orElseThrow(() -> new IllegalArgumentException("Test not found with id: " + testId));
 
         Exam exam = test.getExam();
         ProblemMemberInfoResponseDto memberInfo = memberServiceFeignClient.getMemberInfo(test.getMemberId());
 
         List<Question> questionsList = questionRepository.findByExamExamId(exam.getExamId());
         List<Long> problemId = questionsList.stream()
-                .map(question -> question.getProblem().getProblemId())
-                .collect(Collectors.toList());
+            .map(question -> question.getProblem().getProblemId())
+            .collect(Collectors.toList());
 
         SubmissionExamResultInfoResponseDto submissionsInfo = submissionServiceFeignClient.fetchSubmissionsInfo(problemId, test.getMemberId());
 
@@ -602,87 +617,92 @@ public class ExamService {
         }
 
         Map<Long, Question> questionMap = questionsList.stream()
-                .collect(Collectors.toMap(question -> question.getProblem().getProblemId(), Function.identity()));
+            .collect(Collectors.toMap(question -> question.getProblem().getProblemId(), Function.identity()));
 
         final int[] totalScore = {0};
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
 
         List<QuestionResultDetailsResponseDto> questionDtos = submissionsInfo.getSubmissions().stream()
-                .map(submission -> {
-                    Question question = questionMap.get(submission.getProblemId());
-                    int questionScore = submission.isCorrect() ? question.getQuestionScore() : 0;
-                    totalScore[0] += questionScore;
-                    return new QuestionResultDetailsResponseDto(
-                            question.getQuestionSequence(),
-                            question.getQuestionScore(),
-                            submission.getProblemId(),
-                            question.getProblem().getProblemTitle(),
-                            question.getProblem().getProblemContents(),
-                            submission.isCorrect(),
-                            submission.getSubmissionCode()
-                    );
-                })
-                .collect(Collectors.toList());
+            .map(submission -> {
+                Question question = questionMap.get(submission.getProblemId());
+                int questionScore = submission.isCorrect() ? question.getQuestionScore() : 0;
+                totalScore[0] += questionScore;
+
+                return QuestionResultDetailsResponseDto.builder()
+                    .questionSequence(question.getQuestionSequence())
+                    .questionScore(question.getQuestionScore())
+                    .problemId(submission.getProblemId())
+                    .problemTitle(question.getProblem().getProblemTitle())
+                    .problemContents(question.getProblem().getProblemContents())
+                    .submissionStatus(submission.isCorrect())
+                    .submissionCode(submission.getSubmissionCode())
+                    .build();
+            })
+            .collect(Collectors.toList());
 
         test.setTestScore(totalScore[0]);
         testRepository.save(test);
 
         String testDueTime = Duration.between(test.getTestStartDate(), test.getTestEndDate()).toHoursPart() + ":"
-                + Duration.between(test.getTestStartDate(), test.getTestEndDate()).toMinutesPart() + ":"
-                + Duration.between(test.getTestStartDate(), test.getTestEndDate()).toSecondsPart();
+            + Duration.between(test.getTestStartDate(), test.getTestEndDate()).toMinutesPart() + ":"
+            + Duration.between(test.getTestStartDate(), test.getTestEndDate()).toSecondsPart();
         String submissionDate = test.getTestEndDate().format(dateTimeFormatter);
 
-        return new ExamResultDetailsResponseDto(
-                exam.getExamTitle(),
-                exam.getExamMemo(),
-                (int) testRepository.countByExamExamId(exam.getExamId()),
-                memberInfo.getMemberName(),
-                memberInfo.getMemberNumber(),
-                memberInfo.getMemberEmail(),
-                test.getTestScore(),
-                testDueTime,
-                submissionDate,
-                questionDtos
-        );
+        return ExamResultDetailsResponseDto.builder()
+            .examTitle(exam.getExamTitle())
+            .examMemo(exam.getExamMemo())
+            .submissionTotal(submissionsInfo.getSubmissions().size())
+            .memberName(memberInfo.getMemberName())
+            .memberNumber(memberInfo.getMemberNumber())
+            .memberEmail(memberInfo.getMemberEmail())
+            .testTotalScore(test.getTestScore())
+            .testDueTime(testDueTime)
+            .submissionDate(submissionDate)
+            .examQuestions(questionDtos)
+            .build();
     }
 
     // 시험 점수 조회
     public Integer getTestScore(Long testId) {
         return testRepository.findById(testId)
-                .map(Test::getTestScore)
-                .orElseThrow(() -> new IllegalStateException("해당 테스트를 조회할 수 없습니다.: " + testId));
+            .map(Test::getTestScore)
+            .orElseThrow(() -> new IllegalStateException("해당 테스트를 조회할 수 없습니다.: " + testId));
     }
 
 
     // DateFormatter를 사용하여 날짜 형식을 변경하는 메서드
-    private String dateFormatter (LocalDateTime date) {
+    private String dateFormatter(LocalDateTime date) {
         if (date == null) {
             return null;
         }
         return date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
     }
+
     // 교수 대시보드 진행중인 시험 목록 조회
     public List<ExamCardInfoResponseDto> getProfessorExamCardInfo(Long memberId) {
         List<Exam> exams = examRepository.findByExamStatusAndMemberId(ExamStatus.ONGOING, memberId);
         return exams.stream()
-                .map(exam -> {
-                    String examStartDate = dateFormatter(exam.getExamStartDate());
-                    String examEndDate = dateFormatter(exam.getExamEndDate());
-                    return new ExamCardInfoResponseDto(
-                            exam.getExamId(),
-                            exam.getExamTitle(),
-                            examStartDate,
-                            examEndDate,
-                            exam.getExamStatus().getLabel()
-                    );
-                })
-                .collect(Collectors.toList());
+            .map(exam -> {
+                String examStartDate = dateFormatter(exam.getExamStartDate());
+                String examEndDate = dateFormatter(exam.getExamEndDate());
+
+                return ExamCardInfoResponseDto.builder()
+                    .examId(exam.getExamId())
+                    .examTitle(exam.getExamTitle())
+                    .examStartDate(examStartDate)
+                    .examEndDate(examEndDate)
+                    .examStatus(exam.getExamStatus().getLabel())
+                    .build();
+
+            })
+            .collect(Collectors.toList());
     }
+
     // 시험 응시자 인지 확인 & 시험 시간 맞는지 확인 하기 위한 API
     @Transactional
     public ExamEnterResponseDto checkExamEnter(Long examId, Long memberId) {
         Exam exam = examRepository.findById(examId)
-                .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
+            .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
         if (exam.getExamStatus() == ExamStatus.ONGOING) {
             Test test = testRepository.findByExamExamIdAndMemberId(examId, memberId);
             // 응시 시작 시간 TestStartDate에 저장

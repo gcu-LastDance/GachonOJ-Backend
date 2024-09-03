@@ -6,10 +6,6 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class ExamOrContestInfoResponseDto {
     private Long examId;
     private String examTitle;
@@ -19,4 +15,16 @@ public class ExamOrContestInfoResponseDto {
     private String examEndDate;
     private String examType;
     private String examNotice;
+
+    @Builder
+    private ExamOrContestInfoResponseDto(Long examId, String examTitle, String memberNickname, String examContents, String examStartDate, String examEndDate, String examType, String examNotice) {
+        this.examId = examId;
+        this.examTitle = examTitle;
+        this.memberNickname = memberNickname;
+        this.examContents = examContents;
+        this.examStartDate = examStartDate;
+        this.examEndDate = examEndDate;
+        this.examType = examType;
+        this.examNotice = examNotice;
+    }
 }

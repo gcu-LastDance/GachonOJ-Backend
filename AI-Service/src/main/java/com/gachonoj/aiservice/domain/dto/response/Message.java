@@ -1,13 +1,16 @@
 package com.gachonoj.aiservice.domain.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
 public class Message {
     private String role;
     private String content;
+
+    @Builder
+    private Message(String role, String content) {
+        this.role = role;
+        this.content = content;
+    }
 }

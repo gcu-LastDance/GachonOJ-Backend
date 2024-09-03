@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
 public class EmailRequestDto {
     @Email
     @NotEmpty(message = "이메일을 입력해주세요.")

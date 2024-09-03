@@ -1,14 +1,14 @@
 package com.gachonoj.submissionservice.feign.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
 public class SubmissionExamResultInfoResponseDto {
     private List<SubmissionDetailDto> submissions;
+
+    public SubmissionExamResultInfoResponseDto(List<SubmissionDetailDto> submissions) {
+        this.submissions = submissions;
+    }
 }

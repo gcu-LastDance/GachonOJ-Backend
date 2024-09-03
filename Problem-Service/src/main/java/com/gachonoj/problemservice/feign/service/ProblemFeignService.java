@@ -36,14 +36,20 @@ public class ProblemFeignService {
     public List<SubmissionProblemTestCaseResponseDto> getTestCases(Long problemId) {
         List<Testcase> testcases = testcaseRepository.findByProblemProblemId(problemId);
         return testcases.stream()
-                .map(testcase -> new SubmissionProblemTestCaseResponseDto(testcase.getTestcaseInput(), testcase.getTestcaseOutput()))
+                .map(testcase -> SubmissionProblemTestCaseResponseDto.builder()
+                    .input(testcase.getTestcaseInput())
+                    .output(testcase.getTestcaseOutput())
+                    .build())
                 .toList();
     }
     // 문제의 공개된 테스트케이스 조회
     public List<SubmissionProblemTestCaseResponseDto> getVisibleTestCases(Long problemId){
         List<Testcase> testcases = testcaseRepository.findByProblemProblemIdAndTestcaseStatus(problemId, TestcaseStatus.VISIBLE);
         return testcases.stream()
-                .map(testcase -> new SubmissionProblemTestCaseResponseDto(testcase.getTestcaseInput(), testcase.getTestcaseOutput()))
+                .map(testcase -> SubmissionProblemTestCaseResponseDto.builder()
+                        .input(testcase.getTestcaseInput())
+                        .output(testcase.getTestcaseOutput())
+                        .build())
                 .toList();
     }
     // 문제 점수 조회
