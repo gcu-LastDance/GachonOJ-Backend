@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class MemberNicknameRequestDto {
     @NotBlank
     private String memberNickname;

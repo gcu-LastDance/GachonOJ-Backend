@@ -1,12 +1,11 @@
 package com.gachonoj.submissionservice.domain.dto.response;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class SubmissionResultResponseDto {
     //0. 정답여부
     //1. 문제풀기전 경험치
@@ -32,4 +31,16 @@ public class SubmissionResultResponseDto {
     private Integer afterMemberRating;
     // submissionId
     private Long submissionId;
+
+    @Builder
+    private SubmissionResultResponseDto(Boolean isCorrect, Integer memberRank, Integer problemRank, Integer afterMemberRank, Boolean ratingChanged, Integer memberRating, Integer afterMemberRating, Long submissionId) {
+        this.isCorrect = isCorrect;
+        this.memberRank = memberRank;
+        this.problemRank = problemRank;
+        this.afterMemberRank = afterMemberRank;
+        this.ratingChanged = ratingChanged;
+        this.memberRating = memberRating;
+        this.afterMemberRating = afterMemberRating;
+        this.submissionId = submissionId;
+    }
 }

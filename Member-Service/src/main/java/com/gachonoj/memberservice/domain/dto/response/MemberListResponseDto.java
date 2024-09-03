@@ -2,6 +2,7 @@ package com.gachonoj.memberservice.domain.dto.response;
 
 import com.gachonoj.memberservice.domain.entity.Member;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,8 +10,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class MemberListResponseDto {
     private Long memberId;
     private String memberEmail;

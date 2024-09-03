@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
 public class InquiryAdminListResponseDto {
     private Long inquiryId;
     private String inquiryTitle;

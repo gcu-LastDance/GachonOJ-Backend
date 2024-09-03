@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class ProblemListByAdminResponseDto {
     private Long problemId;
     private String problemTitle;

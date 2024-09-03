@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class InquiryDetailResponseDto {
     private String inquiryTitle;
     private String inquiryContents;

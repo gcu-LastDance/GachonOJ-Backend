@@ -460,14 +460,14 @@ public class ExamService {
                     .orElseThrow(() -> new IllegalArgumentException("Exam not found with id: " + examId));
                 String memberNickname = memberServiceFeignClient.getNicknames(exam.getMemberId());
 
-                return new ExamCardInfoResponseDto(
-                    exam.getExamId(),
-                    exam.getExamTitle(),
-                    memberNickname,
-                    dateFormatter(exam.getExamStartDate()),
-                    dateFormatter(exam.getExamEndDate()),
-                    exam.getExamStatus().getLabel()
-                );
+                return ExamCardInfoResponseDto.builder()
+                    .examId(exam.getExamId())
+                    .examTitle(exam.getExamTitle())
+                    .memberNickname(memberNickname)
+                    .examStartDate(exam.getExamStartDate().format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss")))
+                    .examEndDate(exam.getExamEndDate().format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss")))
+                    .examStatus(exam.getExamStatus().getLabel())
+                    .build();
             })
             .toList();
     }
@@ -494,7 +494,13 @@ public class ExamService {
             String memberNickname = memberServiceFeignClient.getNicknames(exam.getMemberId());
             String examUpdateDate = dateFormatter(exam.getExamUpdateDate());
             String examCreatedDate = dateFormatter(exam.getExamCreatedDate());
-            return new ExamOrContestListResponseDto(exam, examUpdateDate, examCreatedDate, memberNickname);
+
+            return ExamOrContestListResponseDto.builder()
+                .exam(exam)
+                .examUpdateDate(examUpdateDate)
+                .examCreatedDate(examCreatedDate)
+                .memberNickname(memberNickname)
+                .build();
         });
     }
 
@@ -679,13 +685,15 @@ public class ExamService {
             .map(exam -> {
                 String examStartDate = dateFormatter(exam.getExamStartDate());
                 String examEndDate = dateFormatter(exam.getExamEndDate());
-                return new ExamCardInfoResponseDto(
-                    exam.getExamId(),
-                    exam.getExamTitle(),
-                    examStartDate,
-                    examEndDate,
-                    exam.getExamStatus().getLabel()
-                );
+
+                return ExamCardInfoResponseDto.builder()
+                    .examId(exam.getExamId())
+                    .examTitle(exam.getExamTitle())
+                    .examStartDate(examStartDate)
+                    .examEndDate(examEndDate)
+                    .examStatus(exam.getExamStatus().getLabel())
+                    .build();
+
             })
             .collect(Collectors.toList());
     }

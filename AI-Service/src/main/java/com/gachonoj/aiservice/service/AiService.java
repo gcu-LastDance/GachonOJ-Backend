@@ -78,7 +78,14 @@ public class AiService {
         Integer totalTokens = response.getUsage().getTotal_tokens();
         Feedback feedback = new Feedback(submissionId, memberId, problemId, aiContents,totalTokens);
         feedbackRepository.save(feedback);
-        return new AiFeedbackResponseDto(problemId,problemTitle,memberNickname,code,aiContents);
+
+        return AiFeedbackResponseDto.builder()
+            .problemId(problemId)
+            .problemTitle(problemTitle)
+            .memberNickname(memberNickname)
+            .code(code)
+            .aiContents(aiContents)
+            .build();
     }
     // 토큰 사용량 조회
     @Transactional(readOnly = true)

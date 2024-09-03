@@ -2,12 +2,11 @@ package com.gachonoj.problemservice.domain.dto.response;
 
 import com.gachonoj.problemservice.domain.entity.Exam;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class ExamOrContestListResponseDto {
     private Long examId;
     private String examTitle;
@@ -17,7 +16,8 @@ public class ExamOrContestListResponseDto {
     private String examUpdatedDate;
     private String examCreatedDate;
 
-    public ExamOrContestListResponseDto(Exam exam, String examUpdateDate, String examCreatedDate,String memberNickname) {
+    @Builder
+    private ExamOrContestListResponseDto(Exam exam, String examUpdateDate, String examCreatedDate,String memberNickname) {
         this.examId = exam.getExamId();
         this.examTitle = exam.getExamTitle();
         this.examMemo = exam.getExamMemo();

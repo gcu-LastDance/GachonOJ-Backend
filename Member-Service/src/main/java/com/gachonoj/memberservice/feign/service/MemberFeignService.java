@@ -34,7 +34,12 @@ public class MemberFeignService {
         Integer rating  = memberService.calculateRating(member.getMemberRank());
         Integer needRank = memberService.calculateNeedRating(member.getMemberRank());
         Integer memberRank = member.getMemberRank();
-        return new SubmissionMemberRankInfoResponseDto(memberRank,rating,needRank);
+
+        return SubmissionMemberRankInfoResponseDto.builder()
+                .memberRank(memberRank)
+                .memberRating(rating)
+                .needRank(needRank)
+                .build();
     }
     // memberId로 memberRank 갱신
     @Transactional
@@ -47,11 +52,12 @@ public class MemberFeignService {
     public ProblemMemberInfoResponseDto getMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + memberId));
-        return new ProblemMemberInfoResponseDto(
-                member.getMemberNumber(),
-                member.getMemberName(),
-                member.getMemberEmail()
-        );
+
+        return ProblemMemberInfoResponseDto.builder()
+                .memberNumber(member.getMemberNumber())
+                .memberName(member.getMemberName())
+                .memberEmail(member.getMemberEmail())
+                .build();
     }
 
     // 사용자 닉네임 조회 IN 절 이용

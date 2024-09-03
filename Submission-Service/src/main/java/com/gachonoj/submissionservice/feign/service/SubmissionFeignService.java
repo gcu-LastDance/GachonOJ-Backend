@@ -39,7 +39,11 @@ public class SubmissionFeignService {
         int solvedProblem = problemServiceFeignClient.getRegisteredProblemCount(correctProblemIds);
         int tryProblem = problemServiceFeignClient.getRegisteredProblemCount(incorrectProblemIds);
         log.info("solvedProblem: {}, tryProblem: {}, memberId : {}", solvedProblem, tryProblem, memberId);
-        return new SubmissionMemberInfoResponseDto(solvedProblem, tryProblem);
+        return SubmissionMemberInfoResponseDto.builder()
+            .solvedProblemCount(solvedProblem)
+            .tryProblemCount(tryProblem)
+            .build();
+
     }
 
     // memberId로 푼 문제 수 조회
@@ -89,16 +93,23 @@ public class SubmissionFeignService {
     // 제출 번호 통해서 제출 코드, 문제 ID 가져오기
     public SubmissionCodeInfoResponseDto getSubmissionCodeInfo(Long submissionId) {
         Submission submission = submissionRepository.findById(submissionId).orElseThrow(() -> new IllegalArgumentException("해당 제출이 존재하지 않습니다."));
-        return new SubmissionCodeInfoResponseDto(submission.getProblemId(), submission.getSubmissionCode());
+        return SubmissionCodeInfoResponseDto.builder()
+            .problemId(submission.getProblemId())
+            .code(submission.getSubmissionCode())
+            .build();
     }
 
     // 오답률 높은 문제 TOP 5
     public List<CorrectRateResponseDto> getTop5IncorrectProblemList() {
         List<Long> top5IncorrectProblemIds = submissionRepository.findTop5IncorrectProblemIds();
         return top5IncorrectProblemIds.stream().map(problemId -> {
-            double correctRate = getProblemCorrectRate(problemId);
-            return new CorrectRateResponseDto(problemId, correctRate);
-        }).toList();
+                double correctRate = getProblemCorrectRate(problemId);
+                return CorrectRateResponseDto.builder()
+                    .problemId(problemId)
+                    .correctRate(correctRate)
+                    .build();
+            })
+            .toList();
     }
 
     // 오답률 높은 문제 분류 TOP 3를 가져오기 위한 문제 ID, 문제당 제출 개수, 오답 개수 조회

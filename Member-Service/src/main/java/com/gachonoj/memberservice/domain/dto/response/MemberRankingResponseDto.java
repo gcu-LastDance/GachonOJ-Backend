@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
 public class MemberRankingResponseDto {
     private Long memberId;
     private Integer rating;
