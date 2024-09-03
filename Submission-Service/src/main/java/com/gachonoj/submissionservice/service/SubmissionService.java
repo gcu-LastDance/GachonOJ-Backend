@@ -170,11 +170,13 @@ public class SubmissionService {
     public List<SubmissionDetailDto> getSubmissionsDetails(Long memberId, List<Long> problemIds) {
         List<Submission> submissions = submissionRepository.findByMemberIdAndProblemIdIn(memberId, problemIds);
         return submissions.stream()
-                .map(submission -> new SubmissionDetailDto(
-                        submission.getProblemId(),
-                        submission.getSubmissionStatus() == Status.CORRECT,
-                        submission.getSubmissionCode()
-                ))
+                .map(submission ->
+                        SubmissionDetailDto.builder()
+                            .problemId(submission.getProblemId())
+                            .isCorrect(submission.getSubmissionStatus() == Status.CORRECT)
+                            .submissionCode(submission.getSubmissionCode())
+                            .build()
+                    )
                 .collect(Collectors.toList());
     }
     // 제출한 코드 확인하기

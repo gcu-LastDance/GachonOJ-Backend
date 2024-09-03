@@ -6,10 +6,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-@Setter
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class ExamDetailResponseDto {
     private Long examId;
     private String examTitle;
@@ -23,4 +19,20 @@ public class ExamDetailResponseDto {
     private Integer examDueTime;
     private List<Long> candidateList;
     private List<ProblemDetailAdminResponseDto> tests;
+
+    @Builder
+    private ExamDetailResponseDto(Long examId, String examTitle, String examContents, String examStartDate, String examEndDate, String examStatus, String examType, String examMemo, String examNotice, Integer examDueTime, List<Long> candidateList, List<ProblemDetailAdminResponseDto> tests) {
+        this.examId = examId;
+        this.examTitle = examTitle;
+        this.examContents = examContents;
+        this.examStartDate = examStartDate;
+        this.examEndDate = examEndDate;
+        this.examStatus = examStatus;
+        this.examType = examType;
+        this.examMemo = examMemo;
+        this.examNotice = examNotice;
+        this.examDueTime = examDueTime;
+        this.candidateList = candidateList;
+        this.tests = tests;
+    }
 }

@@ -6,7 +6,6 @@ import lombok.Setter;
 import lombok.AllArgsConstructor;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class TestcaseRequestDto {

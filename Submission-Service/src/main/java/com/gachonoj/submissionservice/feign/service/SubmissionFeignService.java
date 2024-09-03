@@ -52,6 +52,7 @@ public class SubmissionFeignService {
     public Integer getCorrectSubmission(Long problemId) {
         return submissionRepository.countCorrectSubmissionsByProblemId(problemId);
     }
+
     // 특정 문제의 정답률 계산
     public double getProblemCorrectRate(Long problemId) {
         log.info("problemId : " + problemId);
@@ -64,10 +65,12 @@ public class SubmissionFeignService {
 
         return (double) correctSubmissions / totalSubmissions * 100.0; // 정답률 계산
     }
+
     // 맞은 문제 리스트 조회
     public List<Long> getCorrectProblemIdsByMemberId(Long memberId) {
         return submissionRepository.findProblemIdByMemberIdAndSubmissionStatus(memberId, Status.CORRECT);
     }
+
     // 틀린 문제 조회
     public List<Long> getIncorrectProblemIdsByMemberId(Long memberId) {
         // 맞은 문제 리스트 조회 후 틀린 문제 리스트 조회
@@ -77,15 +80,18 @@ public class SubmissionFeignService {
         incorrectProblemIds.removeAll(correctProblemIds);
         return incorrectProblemIds;
     }
+
     // problemId로 총 제출 수 조회
     public Integer getProblemSubmitCount(Long problemId) {
         return submissionRepository.countTotalSubmissionsByProblemId(problemId);
     }
+
     // 제출 번호 통해서 제출 코드, 문제 ID 가져오기
     public SubmissionCodeInfoResponseDto getSubmissionCodeInfo(Long submissionId) {
         Submission submission = submissionRepository.findById(submissionId).orElseThrow(() -> new IllegalArgumentException("해당 제출이 존재하지 않습니다."));
         return new SubmissionCodeInfoResponseDto(submission.getProblemId(), submission.getSubmissionCode());
     }
+
     // 오답률 높은 문제 TOP 5
     public List<CorrectRateResponseDto> getTop5IncorrectProblemList() {
         List<Long> top5IncorrectProblemIds = submissionRepository.findTop5IncorrectProblemIds();
@@ -94,18 +100,20 @@ public class SubmissionFeignService {
             return new CorrectRateResponseDto(problemId, correctRate);
         }).toList();
     }
+
     // 오답률 높은 문제 분류 TOP 3를 가져오기 위한 문제 ID, 문제당 제출 개수, 오답 개수 조회
     public List<SubmissionResultCountResponseDto> getIncorrectProblemClass() {
         return submissionRepository.findIncorrectProblemClass();
     }
+
     // memberId와 problemId로 제출 정보 조회
     @Transactional(readOnly = true)
     public Long getRecentSubmissionId(Long memberId, Long problemId) {
         List<Submission> submissions = submissionRepository.findByMemberIdAndProblemId(memberId, problemId);
         submissions = submissions.stream()
-                .filter(submission -> submission.getSubmissionStatus() == Status.CORRECT)
-                .sorted(Comparator.comparing(Submission::getSubmissionDate).reversed())
-                .toList();
+            .filter(submission -> submission.getSubmissionStatus() == Status.CORRECT)
+            .sorted(Comparator.comparing(Submission::getSubmissionDate).reversed())
+            .toList();
         if (submissions.isEmpty()) {
             return null;
         }
@@ -115,26 +123,31 @@ public class SubmissionFeignService {
     // 시험 상세 조회
     public SubmissionExamResultInfoResponseDto fetchSubmissionsInfo(List<Long> problemId, Long memberId) {
         List<SubmissionDetailDto> submissions = submissionRepository.findByMemberIdAndProblemIdIn(memberId, problemId).stream()
-                .map(submission -> new SubmissionDetailDto(
-                        submission.getProblemId(),
-                        submission.getSubmissionStatus() == Status.CORRECT,
-                        submission.getSubmissionCode()
-                ))
-                .collect(Collectors.toList());
+            .map(submission ->
+                SubmissionDetailDto.builder()
+                    .problemId(submission.getProblemId())
+                    .isCorrect(submission.getSubmissionStatus() == Status.CORRECT)
+                    .submissionCode(submission.getSubmissionCode())
+                    .build()
+            )
+            .collect(Collectors.toList());
 
         return new SubmissionExamResultInfoResponseDto(submissions);
     }
+
     //memberId 전송해서 해당 memberId를 외래키로 사용하고있다면 삭제하도록 한다.
     @Transactional
     public void deleteSubmissionByMemberId(Long memberId) {
         submissionRepository.deleteByMemberId(memberId);
         loveRepository.deleteByMemberId(memberId);
     }
+
     // 시험 삭제 시 해당 시험에 대한 제출 삭제
     @Transactional
     public void deleteSubmissionByProblemIds(List<Long> problemIds) {
         submissionRepository.deleteByProblemIdIn(problemIds);
     }
+
     // 문제에 대한 제출 삭제
     @Transactional
     public void deleteSubmissionByProblemId(Long problemId) {

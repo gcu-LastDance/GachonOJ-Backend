@@ -138,7 +138,11 @@ public class BoardService {
         Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new IllegalArgumentException("해당 공지사항이 존재하지 않습니다."));
         String createdDate = dateFormatter(notice.getNoticeUpdatedDate());
         String memberNickname = memberServiceFeignClient.getNicknames(notice.getMemberId());
-        return new NoticeDetailResponseDto(notice,createdDate,memberNickname);
+        return NoticeDetailResponseDto.builder()
+            .notice(notice)
+            .createdDate(createdDate)
+            .memberNickname(memberNickname)
+            .build();
     }
     // 문의사항 목록 조회 관리자
     @Transactional(readOnly = true)

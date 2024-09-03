@@ -1,18 +1,22 @@
-    package com.gachonoj.problemservice.domain.dto.response;
+package com.gachonoj.problemservice.domain.dto.response;
 
-    import lombok.AllArgsConstructor;
-    import lombok.Data;
-    import lombok.NoArgsConstructor;
-    import org.springframework.data.domain.Page;
+import lombok.*;
+import org.springframework.data.domain.Page;
 
-    import java.util.List;
+import java.util.List;
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public class ExamResultPageDto {
-        private String examTitle;
-        private String examMemo;
-        private int submissionTotal;
-        private List<ExamResultListDto> results;
+@Getter
+public class ExamResultPageDto {
+    private String examTitle;
+    private String examMemo;
+    private int submissionTotal;
+    private List<ExamResultListDto> results;
+
+    @Builder
+    private ExamResultPageDto(String examTitle, String examMemo, int submissionTotal, List<ExamResultListDto> results) {
+        this.examTitle = examTitle;
+        this.examMemo = examMemo;
+        this.submissionTotal = submissionTotal;
+        this.results = results;
     }
+}
