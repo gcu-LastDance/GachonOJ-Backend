@@ -2,15 +2,11 @@ package com.gachonoj.submissionservice.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Entity
-@Table
-@NoArgsConstructor
 @Getter
-@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
 public class Love {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,4 +16,10 @@ public class Love {
     private Submission submission;
     @Column(nullable = false)
     private Long memberId;
+
+    @Builder
+    private Love(Submission submission, Long memberId) {
+        this.submission = submission;
+        this.memberId = memberId;
+    }
 }

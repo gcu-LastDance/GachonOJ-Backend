@@ -10,12 +10,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 
-@Entity
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @EntityListeners(AuditingEntityListener.class)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
 public class Inquiry {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,12 +31,6 @@ public class Inquiry {
     @OneToOne(mappedBy = "inquiry", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Reply reply;
 
-    public Inquiry(String inquiryTitle, String inquiryContents, Long memberId) {
-        this.inquiryTitle = inquiryTitle;
-        this.inquiryContents = inquiryContents;
-        this.memberId = memberId;
-    }
-
     public void updateInquiry(String inquiryTitle, String inquiryContents) {
         this.inquiryTitle = inquiryTitle;
         this.inquiryContents = inquiryContents;
@@ -46,6 +38,13 @@ public class Inquiry {
 
     public void updateInquiryStatus(InquiryStatus inquiryStatus) {
         this.inquiryStatus = inquiryStatus;
+    }
+
+    @Builder
+    private Inquiry(Long memberId, String inquiryTitle, String inquiryContents) {
+        this.memberId = memberId;
+        this.inquiryTitle = inquiryTitle;
+        this.inquiryContents = inquiryContents;
     }
 }
 
