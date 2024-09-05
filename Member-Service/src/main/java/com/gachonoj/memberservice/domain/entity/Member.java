@@ -4,13 +4,13 @@ import com.gachonoj.memberservice.domain.constant.MemberLang;
 import com.gachonoj.memberservice.domain.constant.Role;
 import com.gachonoj.memberservice.domain.dto.request.MemberLangRequestDto;
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
