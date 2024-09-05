@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.gachonoj.boardservice.domain.constant.InquiryStatus.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -64,7 +66,11 @@ public class BoardService {
     // 문의사항 작성
     @Transactional
     public void createInquiry(InquiryRequestDto inquiryRequestDto, Long memberId) {
-        Inquiry inquiry = new Inquiry(inquiryRequestDto.getInquiryTitle(), inquiryRequestDto.getInquiryContents(), memberId);
+        Inquiry inquiry = Inquiry.builder()
+            .inquiryTitle(inquiryRequestDto.getInquiryTitle())
+            .inquiryContents(inquiryRequestDto.getInquiryContents())
+            .memberId(memberId)
+            .build();
         inquiryRepository.save(inquiry);
     }
 
@@ -103,7 +109,7 @@ public class BoardService {
         Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new IllegalArgumentException("해당 문의사항이 존재하지 않습니다."));
         Reply reply = new Reply(inquiry, replyRequestDto.getReplyContents());
         replyRepository.save(reply);
-        inquiry.updateInquiryStatus(InquiryStatus.COMPLETED);
+        inquiry.updateInquiryStatus(COMPLETED);
     }
 
     // 메인 대시보드 공지사항 목록 조회 최대 5개
@@ -178,7 +184,7 @@ public class BoardService {
                 .findFirst()
                 .map(MemberNicknamesDto::getMemberNickname)
                 .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
-            if (inquiry.getInquiryStatus() == InquiryStatus.COMPLETED && inquiry.getReply() != null) {
+            if (inquiry.getInquiryStatus() == COMPLETED && inquiry.getReply() != null) {
                 String replyUpdateDate = dateFormatter(inquiry.getReply().getReplyUpdatedDate());
                 return new InquiryAdminListResponseDto(inquiry, memberNickname, createdDate, replyUpdateDate);
             } else {
@@ -210,7 +216,7 @@ public class BoardService {
         if (!inquiry.getMemberId().equals(memberId)) {
             throw new IllegalArgumentException("해당 문의사항에 대한 권한이 없습니다.");
         }
-        if (inquiry.getInquiryStatus() == InquiryStatus.COMPLETED && inquiry.getReply() != null) {
+        if (inquiry.getInquiryStatus() == COMPLETED && inquiry.getReply() != null) {
             return new InquiryDetailResponseDto(inquiry, inquiryCreatedDate, inquiry.getReply());
         }
         return new InquiryDetailResponseDto(inquiry, inquiryCreatedDate);
@@ -222,7 +228,7 @@ public class BoardService {
         Inquiry inquiry = inquiryRepository.findById(inquiryId).orElseThrow(() -> new IllegalArgumentException("해당 문의사항이 존재하지 않습니다."));
         String memberNickname = memberServiceFeignClient.getNicknames(inquiry.getMemberId());
         String inquiryCreatedDate = dateFormatter(inquiry.getInquiryCreatedDate());
-        if (inquiry.getInquiryStatus() == InquiryStatus.COMPLETED && inquiry.getReply() != null) {
+        if (inquiry.getInquiryStatus() == COMPLETED && inquiry.getReply() != null) {
             return new InquiryDetailAdminResponseDto(inquiry, memberNickname, inquiryCreatedDate, inquiry.getReply());
         }
         return new InquiryDetailAdminResponseDto(inquiry, memberNickname, inquiryCreatedDate);
@@ -231,7 +237,7 @@ public class BoardService {
     // 관리자 대시보드 최근 답변되지않은 문의사항 목록 조회
     @Transactional(readOnly = true)
     public List<InquiryAdminListResponseDto> getRecentInquiryList() {
-        List<Inquiry> inquiries = inquiryRepository.findTop5ByInquiryStatusOrderByInquiryCreatedDateDesc(InquiryStatus.NONE);
+        List<Inquiry> inquiries = inquiryRepository.findTop5ByInquiryStatusOrderByInquiryCreatedDateDesc(NONE);
         List<InquiryAdminListResponseDto> inquiryAdminListResponseDtos = new ArrayList<>();
         List<Long> memberIds = inquiries.stream().map(Inquiry::getMemberId).toList();
         List<MemberNicknamesDto> memberNicknames = memberServiceFeignClient.getNicknames(memberIds);
@@ -242,7 +248,7 @@ public class BoardService {
                 .map(MemberNicknamesDto::getMemberNickname)
                 .orElseThrow(() -> new IllegalArgumentException("해당 회원이 존재하지 않습니다."));
             String createdDate = dateFormatter(inquiry.getInquiryCreatedDate());
-            InquiryAdminListResponseDto responseDto = new InquiryAdminListResponseDto(inquiry, memberNickname, createdDate, InquiryStatus.NONE);
+            InquiryAdminListResponseDto responseDto = new InquiryAdminListResponseDto(inquiry, memberNickname, createdDate, NONE);
             inquiryAdminListResponseDtos.add(responseDto);
         }
         return inquiryAdminListResponseDtos;

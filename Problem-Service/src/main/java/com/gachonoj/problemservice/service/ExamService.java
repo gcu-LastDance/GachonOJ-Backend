@@ -73,17 +73,19 @@ public class ExamService {
         LocalDateTime startDate = LocalDateTime.parse(request.getExamStartDate(), formatter);
         LocalDateTime endDate = LocalDateTime.parse(request.getExamEndDate(), formatter);
 
-        Exam exam = new Exam();  // 실제 엔티티 클래스
-        exam.setMemberId(memberId);
-        exam.setExamTitle(request.getExamTitle());
-        exam.setExamMemo(request.getExamMemo());
-        exam.setExamContents(request.getExamContents());
-        exam.setExamNotice(request.getExamNotice());
-        exam.setExamStartDate(startDate);
-        exam.setExamEndDate(endDate);
-        exam.setExamDueTime(request.getExamDueTime());
-        exam.setExamStatus(request.getExamStatus());
-        exam.setExamType(request.getExamType());
+        Exam exam = Exam.builder()
+            .memberId(memberId)
+            .examTitle(request.getExamTitle())
+            .examMemo(request.getExamMemo())
+            .examContents(request.getExamContents())
+            .examNotice(request.getExamNotice())
+            .examStartDate(startDate)
+            .examEndDate(endDate)
+            .examDueTime(request.getExamDueTime())
+            .examStatus(request.getExamStatus())
+            .examType(request.getExamType())
+            .build();
+
 
         examRepository.save(exam);  // 시험 정보 저장
 

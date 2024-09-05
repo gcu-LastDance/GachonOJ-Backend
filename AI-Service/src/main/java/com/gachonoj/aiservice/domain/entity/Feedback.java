@@ -1,6 +1,7 @@
 package com.gachonoj.aiservice.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,10 +9,9 @@ import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
 public class Feedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +30,7 @@ public class Feedback {
     private LocalDateTime feedbackCreatedDate;
 
     @Builder
-    public Feedback(Long submissionId, Long memberId, Long problemId, String aiContents, Integer totalTokens) {
+    private Feedback(Long submissionId, Long memberId, Long problemId, String aiContents, Integer totalTokens) {
         this.submissionId = submissionId;
         this.memberId = memberId;
         this.problemId = problemId;

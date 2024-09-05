@@ -48,6 +48,7 @@ public class AiService {
         ChatGPTResponse response = restTemplate.postForObject(url, request, ChatGPTResponse.class);
         return response.getChoices().get(0).getMessage().getContent();
     }
+
     // TODO : 문제번호를 받아서 해당 문제에 대한 제출 코드를 가져오고 그 코드를 AI에 넣어서 결과를 받아온다.
     //        그 결과를 다시 제출자에게 전달한다.
     @Transactional
@@ -76,7 +77,13 @@ public class AiService {
         ChatGPTResponse response = restTemplate.postForObject(url, request, ChatGPTResponse.class);
         String aiContents = response.getChoices().get(0).getMessage().getContent();
         Integer totalTokens = response.getUsage().getTotal_tokens();
-        Feedback feedback = new Feedback(submissionId, memberId, problemId, aiContents,totalTokens);
+        Feedback feedback = Feedback.builder()
+            .submissionId(submissionId)
+            .memberId(memberId)
+            .problemId(problemId)
+            .aiContents(aiContents)
+            .totalTokens(totalTokens)
+            .build();
         feedbackRepository.save(feedback);
 
         return AiFeedbackResponseDto.builder()
@@ -87,10 +94,11 @@ public class AiService {
             .aiContents(aiContents)
             .build();
     }
+
     // 토큰 사용량 조회
     @Transactional(readOnly = true)
     public TokenUsageResponseDto tokenUsage() {
-        List<Feedback> feedbacks= feedbackRepository.findByFeedbackCreatedDateBetween(LocalDate.now().atStartOfDay(), LocalDate.now().atTime(23,59,59));
+        List<Feedback> feedbacks = feedbackRepository.findByFeedbackCreatedDateBetween(LocalDate.now().atStartOfDay(), LocalDate.now().atTime(23, 59, 59));
         Long todayTokenUsage = feedbacks.stream().mapToLong(Feedback::getTotalTokens).sum();
         Long totalTokenUsage = feedbackRepository.findAll().stream().mapToLong(Feedback::getTotalTokens).sum();
         return TokenUsageResponseDto.builder()

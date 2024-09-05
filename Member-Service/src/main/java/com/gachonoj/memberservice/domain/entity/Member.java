@@ -4,10 +4,7 @@ import com.gachonoj.memberservice.domain.constant.MemberLang;
 import com.gachonoj.memberservice.domain.constant.Role;
 import com.gachonoj.memberservice.domain.dto.request.MemberLangRequestDto;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 
@@ -15,11 +12,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-@Entity
-@Table
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,18 +39,7 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private MemberLang memberLang;
 
-    @Builder
-    public Member(String memberEmail, String memberPassword, String memberName, String memberNumber, String memberNickname,Role memberRole) {
-        this.memberEmail = memberEmail;
-        this.memberPassword = memberPassword;
-        this.memberName = memberName;
-        this.memberNumber = memberNumber;
-        this.memberRole = memberRole;
-        this.memberNickname = memberNickname;
-        this.memberRank = 1000;
-        this.memberCreatedDate = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
-        this.memberLang = MemberLang.C;
-    }
+
     // 사용자 언어 설정
     public void updateMemberLang(MemberLangRequestDto memberLangRequestDto) {
         this.memberLang = memberLangRequestDto.getMemberLang();

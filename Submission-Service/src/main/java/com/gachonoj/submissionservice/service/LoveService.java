@@ -23,10 +23,11 @@ public class LoveService {
             loveRepository.deleteBySubmissionSubmissionIdAndMemberId(submissionId, memberId);
         } else {
             Submission submission = submissionRepository.findById(submissionId)
-                    .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + submissionId));
-            Love love = new Love();
-            love.setSubmission(submission);
-            love.setMemberId(memberId);
+                .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + submissionId));
+            Love love = Love.builder()
+                .submission(submission)
+                .memberId(memberId)
+                .build();
             loveRepository.save(love);
         }
     }

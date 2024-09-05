@@ -10,10 +10,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Entity
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Entity
 public class Testcase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,4 +32,11 @@ public class Testcase {
     @ManyToOne(fetch = FetchType.LAZY, optional = true)  // 선택적 관계로 변경
     @JoinColumn(name = "question_id", nullable = true)  // null 허용
     private Question question;
+
+    @Builder
+    private Testcase(String testcaseInput, String testcaseOutput, TestcaseStatus testcaseStatus) {
+        this.testcaseInput = testcaseInput;
+        this.testcaseOutput = testcaseOutput;
+        this.testcaseStatus = testcaseStatus;
+    }
 }
