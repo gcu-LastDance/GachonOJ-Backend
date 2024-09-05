@@ -66,4 +66,14 @@ public class Member {
     public void updateMemberRank(Integer newRank) {
         this.memberRank = newRank;
     }
+
+    @Builder
+    private Member(String memberEmail, String memberName, String memberNumber, String memberPassword, String memberNickname, Role memberRole) {
+        this.memberEmail = memberEmail;
+        this.memberName = memberName;
+        this.memberNumber = memberNumber;
+        this.memberPassword = memberPassword;
+        this.memberNickname = memberNickname;
+        this.memberRole = memberRole;
+    }
 }
