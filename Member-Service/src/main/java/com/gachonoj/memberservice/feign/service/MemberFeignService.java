@@ -45,7 +45,7 @@ public class MemberFeignService {
     @Transactional
     public void updateMemberRank(Long memberId, Integer newRank) {
         Member member = memberRepository.findByMemberId(memberId);
-        member.setMemberRank(newRank);
+        member.updateMemberRank(newRank);
     }
 
     // memberId로 member 정보 조회

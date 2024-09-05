@@ -62,4 +62,8 @@ public class Member {
         this.memberNumber = memberNumber;
         this.memberRole = role;
     }
+
+    public void updateMemberRank(Integer newRank) {
+        this.memberRank = newRank;
+    }
 }
